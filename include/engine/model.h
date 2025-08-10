@@ -6,22 +6,24 @@ using namespace std;
 
 namespace engine
 {
-namespace actor
+namespace model
 {
 
 class mesh
 {
 };
 
-class actor
+class model
 {
+  public:
 	string name;
-	uint32_t meshcnt;
+	model *dependsOn;
+	bool isDependency;
+
+	uint32_t meshCnt;
 	mesh *meshes;
 	SDL_GPUGraphicsPipeline *pipelines;
 };
 
-typedef actor dependency;
-
-} // namespace actor
+} // namespace model
 } // namespace engine

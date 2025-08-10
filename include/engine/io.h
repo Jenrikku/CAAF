@@ -1,9 +1,9 @@
-#include "engine/actor.h"
 #include "engine/caaf.h"
+#include "engine/model.h"
 #include <generator>
 #include <string>
 
-#define STORAGE_TITLE_ROOT "models"
+#define STORAGE_CAAF_ROOT "models"
 
 using namespace std;
 
@@ -13,24 +13,29 @@ namespace io
 {
 
 /*
- * Loads an actor from the title storage and any required dependencies.
- * Dependencies are cached so that they are not read more than once.
- * Returns false if actor was not found or could not be opened.
+ * Loads a model from the title storage and any required dependencies.
+ * Models are cached so that they are not read more than once.
+ * Returns false if a model was not found or could not be opened.
  */
-bool loadActor(string name);
+bool loadModel(string name);
 
 #ifdef CAAF_ENABLE_DEBUG_TOOLS
 /*
- * Writes an actor back to the title storage.
+ * Reads a model from a path.
  */
-void writeActor(string name);
+bool readModel(string path);
 
 /*
- * Creates a new empty actor.
+ * Writes an model to the desired path.
  */
-void createActor(string name);
+bool writeModel(string name, string path);
 
-generator<actor::actor> getActors();
+/*
+ * Creates a new empty model.
+ */
+void createModel(string name);
+
+generator<model::model> getModels();
 
 #endif
 

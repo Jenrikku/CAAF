@@ -63,6 +63,7 @@ uint8_t *decompress(const uint8_t *data, size_t *size)
 		return nullptr;
 	}
 
+	*size = ressize;
 	return outbuf;
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 #define CAAF_ENABLE_DEBUG_TOOLS
 #define CAAF_LZMA_LEVEL 5
@@ -8,6 +9,8 @@
 
 #define CAAF_HEADER_MAGIC "CAAF"
 #define CAAF_VERSION 0
+
+#define CAAF_SECTION_LIST_POS 0x10
 
 // EnFlags definitions:
 
@@ -31,6 +34,8 @@ namespace engine
 {
 namespace caaf
 {
+
+enum section { unknown, STRT, MESH, GFXP, TEXD, SAMP };
 
 // Section header
 typedef struct secHeader {
@@ -157,6 +162,14 @@ typedef struct sampler {
 	float maxLOD;
 	uint32_t props;
 } sampler;
+
+uint8_t *getSectionStart(uint8_t *caaf, uint16_t idx);
+
+section identifySection(uint8_t *secStart);
+
+uint8_t *getEntryPtr(uint8_t *secStart, uint16_t idx);
+
+string getString(uint8_t *strSec, uint16_t idx);
 
 } // namespace caaf
 } // namespace engine

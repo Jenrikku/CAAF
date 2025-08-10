@@ -2,6 +2,7 @@
 
 #include "engine/io.h"
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_dialog.h>
 #include <SDL3/SDL_main.h>
 #include <format>
 #include <imgui.h>
@@ -74,8 +75,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 										   SDL_GPU_SAMPLECOUNT_1};
 	ImGui_ImplSDLGPU3_Init(&initinfo);
 
-	engine::io::loadActor("");
-
 	return SDL_APP_CONTINUE;
 }
 
@@ -120,6 +119,19 @@ SDL_AppResult render()
 	return SDL_APP_CONTINUE;
 }
 
+void fileOpened(void *userdata, const char *const *filelist, int filter)
+{
+	if (filelist == nullptr) return;
+
+	size_t idx = 0;
+	const char *current = filelist[idx++];
+
+	while (current != nullptr) {
+		engine::io::readModel(current);
+		current = filelist[idx++];
+	}
+}
+
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
 	ImGui_ImplSDLGPU3_NewFrame();
@@ -133,7 +145,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::BeginMenu("New")) {
-				if (ImGui::MenuItem("Actor", "Ctrl+N")) {
+				if (ImGui::MenuItem("Model", "Ctrl+N")) {
 					//
 				}
 
@@ -145,7 +157,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 			}
 
 			if (ImGui::MenuItem("Open", "Ctrl+O")) {
-				//
+				SDL_ShowOpenFileDialog(fileOpened, nullptr, window, nullptr, 0, nullptr, true);
 			}
 
 			if (ImGui::MenuItem("Save", "Ctrl+S")) {
