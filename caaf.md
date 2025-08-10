@@ -1,7 +1,7 @@
 # Compact Actor Archive Format
 
 Current version: 0  
-Based on SDL 3.2.16
+Based on SDL 3.2.x
   
 All numbers are in base 16.  
 
@@ -62,7 +62,7 @@ Whenever IsDep is set, then the current file is meant to be read as a dependency
 
 ## Section list
 
-Always located starting byte 0F in the file.  
+Always located starting byte 10 in the file.  
 The first section is always the string table, other sections are optional and can appear in any order.  
 For each section, a 32-bit unsigned integer absolute pointer is stored.
 
