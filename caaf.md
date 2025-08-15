@@ -248,7 +248,7 @@ Size of texture data is obtained by multiplying width, height and depth. All of 
 ## Sampler section
 
 Magic: SAMP
-Stores sample definitions which can be used by more than one texture.  
+Stores sampler definitions which can be used by more than one texture.  
 Entry contents are as follows:
 
 | Offset | Size | Sign | Name    | Description                                              |
