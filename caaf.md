@@ -1,9 +1,9 @@
 # Compact Actor Archive Format
 
 Current version: 0  
-Based on SDL 3.2.x
+Based on SDL 3.2.x  
   
-All numbers are in base 16.  
+All numbers are in base 16.
 
 ## General definitions
 
@@ -18,8 +18,7 @@ Each section is based on the following definition:
 | Offset | Size | Sign | Name    | Description                                              |
 | ------ | ---- | ---- | ------- | -------------------------------------------------------- |
 | 00     | 04   | -    | Magic   | Magic in ASCII                                           |
-| 04     | 04   | No   | Size    | Amount of memory in bytes that the section takes.        |
-| 08     | 04   | No   | Count   | Amount of entries in the section.                        |
+| 04     | 04   | No   | Count   | Amount of entries in the section.                        |
 
 Section data is akin to C-style arrays (`void**`). Each section has an array of 4-byte unsigned integers after its header. Every integer is a relative pointer (relative to itself) to an entry with a format that matches the section's definition.
 
@@ -41,7 +40,6 @@ When parsing a CAAF file that has a dependency, the contents of the dependency a
 
 ### Other definitions
 
-Sections, subsections and section entry data should be aligned to 16 bytes, although it is not required.  
 Section sizes do not include the section header.  
 Pointers within entries of sections and subsections are always relative to the start of that entry.
 
@@ -81,22 +79,21 @@ Entry contents are as follows:
 | Offset | Size | Sign | Name    | Description                                              |
 | ------ | ---- | ---- | ------- | -------------------------------------------------------- |
 | 00     | 04   | No   | VBDPtr  | Pointer to vertex buffer data subsection.                |
-| 04     | 04   | No   | VertPtr | Pointer to mesh vertex data.                             |
-| 08     | 04   | No   | IdxCnt  | Amount of indices in the mesh.                           |
-| 0C     | 04   | No   | IdxPtr  | Pointer to mesh index data.                              |
+| 00     | 04   | No   | VtxSize | Size of the mesh vertex data.                            |
+| 0C     | 04   | No   | IdxSize | Size of the mesh index data.                             |
+| 08     | 04   | No   | MeshPtr | Pointer to mesh vertex and index data.                   |
 
-VertPtr refers to a data block of undefined size that is meant to be read in parts as per what is defined in the vertex buffer data subsection.  
-IdxPtr refers to a data block of size IdxCnt * 4 containing elements of 4 bytes each.
+Vertices are stored in a data block at position MeshPtr and of size VtxSize.
+Indices are stored in a data block at position MeshPtr + VtxSize and of size IdxSize containing elements of 2 bytes each.
 
 ### Vertex Buffer Data subsection
 
-Size of data: 08  
+Size of data: 04  
 Each vertex buffer data entry refers to a vertex buffer description entry of the same index and is defined as follows:
 
 | Offset | Size | Sign | Name    | Description                                              |
 | ------ | ---- | ---- | ------- | -------------------------------------------------------- |
 | 00     | 04   | No   | Start   | The start of the buffer, relative to mesh data start.    |
-| 04     | 04   | No   | Length  | The lenght of the buffer.                                |
 
 ## Graphics Pipeline section
 
@@ -158,10 +155,10 @@ Each vertex buffer description entry is defined as follows:
 
 | Offset | Size | Sign | Name    | Description                                              |
 | ------ | ---- | ---- | ------- | -------------------------------------------------------- |
-| 00     | 04   | No   | Slot    | The binding slot of the vertex buffer.                   |
-| 04     | 04   | No   | Pitch   | The byte pitch between consecutive elements.             |
-| 08     | 04   | No   | InstStp | Instance step rate. Currently restricted to 0 or 1.      |
+| 00     | 04   | No   | Pitch   | The byte pitch between consecutive elements.             |
+| 04     | 04   | No   | InstStp | Instance step rate. Currently restricted to 0 or 1.      |
 
+The binding slot of the vertex buffer is defined by the index of the entry within the subsection.  
 InstStp is meant to be used in the future when the GPU API supports instance step rate. For now, it is only used to define `SDL_GPUVertexBufferDescription::input_rate`: 0 refers to `SDL_GPU_VERTEXINPUTRATE_VERTEX` and 1 refers to `SDL_GPU_VERTEXINPUTRATE_INSTANCE`.
 
 ### Vertex Attribute subsection
