@@ -11,10 +11,22 @@ namespace model
 
 class mesh
 {
+	SDL_GPUDevice *device;
+
+  public:
+	SDL_GPUBuffer *vtxBuf;
+	SDL_GPUBuffer *idxBuf;
+
+	uint32_t vtxOffsCnt;
+	uint32_t *vtxOffsets;
+
+	~mesh();
 };
 
 class model
 {
+	SDL_GPUDevice *device;
+
   public:
 	string name;
 	model *dependsOn;
@@ -22,7 +34,9 @@ class model
 
 	uint32_t meshCnt;
 	mesh *meshes;
-	SDL_GPUGraphicsPipeline *pipelines;
+	SDL_GPUGraphicsPipeline **pipelines;
+
+	~model();
 };
 
 } // namespace model

@@ -37,10 +37,11 @@ namespace caaf
 
 enum section { unknown, STRT, MESH, GFXP, TEXD, SAMP };
 
+typedef uint16_t index;
+
 // Section header
 typedef struct secHeader {
 	char magic[4];
-	uint32_t size; // total
 	uint32_t count;
 } secHeader;
 
@@ -63,15 +64,14 @@ typedef struct header {
 // Mesh entry
 typedef struct mesh {
 	uint32_t vbdPtr;
-	uint32_t vertPtr;
-	uint32_t idxCnt;
-	uint32_t idxPtr;
+	uint32_t vtxSize;
+	uint32_t idxSize;
+	uint32_t meshPtr;
 } mesh;
 
 // Vertex Buffer Data entry
 typedef struct vtxBufData {
 	uint32_t start;
-	uint32_t length;
 } vtxBufData;
 
 // Graphics Pipeline entry
@@ -101,7 +101,6 @@ typedef struct gfxPip {
 
 // Vertex Buffer Description entry
 typedef struct vtxBufDesc {
-	uint32_t slot;
 	uint32_t pitch;
 	uint32_t instStp;
 } vtxBufDesc;
@@ -163,13 +162,26 @@ typedef struct sampler {
 	uint32_t props;
 } sampler;
 
+// Returns a pointer to the start of the section, meant to be used with other functions.
 uint8_t *getSectionStart(uint8_t *caaf, uint16_t idx);
 
+// Identifies the type of section from the pointer.
 section identifySection(uint8_t *secStart);
 
-uint8_t *getEntryPtr(uint8_t *secStart, uint16_t idx);
+// Gets the amount of entries inside the section.
+uint16_t getSecEntryCnt(uint8_t *secStart);
 
-string getString(uint8_t *strSec, uint16_t idx);
+// Returns a pointer to the start of a section's entry by index.
+uint8_t *getSecEntryPtr(uint8_t *secStart, uint16_t idx);
+
+// Gets the amount of entries inside the subsection.
+uint16_t getSubEntryCnt(uint8_t *subStart);
+
+// Returns a pointer to the start of a subsection's entry by index.
+uint8_t *getSubEntryPtr(uint8_t *subStart, uint16_t idx);
+
+// Gets a string from the string table section by index.
+string getString(uint8_t *strSec, uint16_t idx, uint16_t limit = UINT16_MAX);
 
 } // namespace caaf
 } // namespace engine

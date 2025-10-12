@@ -10,6 +10,7 @@ add_executable(caafeditor src/main.cpp
                           src/engine/io.cpp
                           src/engine/caaf.cpp
                           src/engine/lzma.cpp
+                          src/engine/model.cpp
                           src/imgui/imgui.cpp
                           src/imgui/imgui_demo.cpp
                           src/imgui/imgui_draw.cpp

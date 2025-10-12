@@ -127,8 +127,14 @@ void fileOpened(void *userdata, const char *const *filelist, int filter)
 	const char *current = filelist[idx++];
 
 	while (current != nullptr) {
-		engine::io::readModel(current);
+		SDL_GPUCommandBuffer *cmdbuf = SDL_AcquireGPUCommandBuffer(device);
+		SDL_GPUCopyPass *pass = SDL_BeginGPUCopyPass(cmdbuf);
+
+		engine::io::readModel(current, device, pass);
 		current = filelist[idx++];
+
+		SDL_EndGPUCopyPass(pass);
+		SDL_SubmitGPUCommandBuffer(cmdbuf);
 	}
 }
 

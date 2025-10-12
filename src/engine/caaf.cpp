@@ -25,16 +25,37 @@ section identifySection(uint8_t *secStart)
 	return unknown;
 }
 
-uint8_t *getEntryPtr(uint8_t *secStart, uint16_t idx)
+uint16_t getSecEntryCnt(uint8_t *secStart)
+{
+	secHeader header = *(secHeader *)secStart;
+	return header.count;
+}
+
+uint8_t *getSecEntryPtr(uint8_t *secStart, uint16_t idx)
 {
 	uint8_t *ptrPos = secStart + sizeof(secHeader) + (idx << 2);
 	uint32_t offset = *(uint32_t *)ptrPos;
 	return ptrPos + offset;
 }
 
-string getString(uint8_t *strSec, uint16_t idx)
+uint16_t getSubEntryCnt(uint8_t *subStart)
 {
-	const char *str = (char *)getEntryPtr(strSec, idx);
+	subHeader header = *(subHeader *)subStart;
+	return header.count;
+}
+
+uint8_t *getSubEntryPtr(uint8_t *subStart, uint16_t idx)
+{
+	subHeader header = *(subHeader *)subStart;
+	uint8_t *ptr = subStart + sizeof(subHeader) + header.size * idx;
+	return ptr;
+}
+
+string getString(uint8_t *strSec, uint16_t idx, uint16_t limit)
+{
+	if (idx > limit) return "";
+
+	const char *str = (char *)getSecEntryPtr(strSec, idx);
 	return string(str);
 }
 
