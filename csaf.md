@@ -1,4 +1,4 @@
-# Compact Actor Archive Format
+# Compact Shader Archive Format
 
 Current version: 0  
 Based on SDL 3.2.x  
@@ -38,7 +38,7 @@ For each shader format there is an entry defined as:
 | Offset | Size | Sign | Name    | Description                                              |
 | ------ | ---- | ---- | ------- | -------------------------------------------------------- |
 | 00     | 04   | No   | Size    | Size of the shader in bytes.                             |
-| 04     | 04   | No   | Pointer | Pointer to the shader's first byte.                      |
+| 04     | 04   | No   | Pointer | Absolute pointer to the shader's first byte.             |
 
 Entries are stored one after the other in an array.
 
