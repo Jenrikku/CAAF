@@ -10,7 +10,11 @@
 #define CAAF_HEADER_MAGIC "CAAF"
 #define CAAF_VERSION 0
 
+#define CSAF_HEADER_MAGIC "CSAF"
+#define CSAF_VERSION 0
+
 #define CAAF_SECTION_LIST_POS 0x10
+#define CSAF_SHADER_LIST_POS 0x10
 
 // EnFlags definitions:
 
@@ -184,4 +188,31 @@ uint8_t *getSubEntryPtr(uint8_t *subStart, uint16_t idx);
 string getString(uint8_t *strSec, uint16_t idx, uint16_t limit = UINT16_MAX);
 
 } // namespace caaf
+
+namespace csaf
+{
+
+// CSAF file header
+typedef struct header {
+	char magic[4];
+	uint8_t version;
+	uint8_t stage;
+	uint8_t sampleCnt;
+	uint8_t storageTexCnt;
+	uint8_t storageBufCnt;
+	uint8_t uniformBufCnt;
+	uint16_t shaderFormats;
+	uint32_t props;
+} header;
+
+// Shader list entry
+typedef struct shaderEntry {
+	uint32_t size;
+	uint32_t offset;
+} shaderEntry;
+
+// Returns a pointer to the shader coda and its size
+pair<uint8_t *, uint32_t> getShaderCode(uint8_t *csaf, uint16_t formats, uint16_t targetFormat);
+
+} // namespace csaf
 } // namespace engine

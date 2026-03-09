@@ -1,5 +1,6 @@
 #include "engine/caaf.h"
 #include <cstdint>
+#include <utility>
 
 namespace engine
 {
@@ -60,4 +61,28 @@ string getString(uint8_t *strSec, uint16_t idx, uint16_t limit)
 }
 
 } // namespace caaf
+
+namespace csaf
+{
+
+pair<uint8_t *, uint32_t> getShaderCode(uint8_t *csaf, uint16_t formats, uint16_t targetFormat)
+{
+	// Calculate shader position in file:
+	uint8_t shaderPos = 0;
+
+	// Count all set bits before target format to know how many shaders are stored before
+	while (!(targetFormat & 1)) {
+		if (formats & 1) ++shaderPos;
+
+		formats >>= 1;
+		targetFormat >>= 1;
+	}
+
+	uint8_t *entryPtr = csaf + 0x10 + (uint16_t)shaderPos << 3;
+	shaderEntry entry = *(shaderEntry *)entryPtr;
+
+	return make_pair(csaf + entry.offset, entry.size);
+}
+
+} // namespace csaf
 } // namespace engine

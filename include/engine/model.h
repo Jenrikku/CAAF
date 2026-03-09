@@ -1,3 +1,4 @@
+#include "caaf.h"
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_gpu.h>
 #include <string>
@@ -19,6 +20,13 @@ class mesh
 
 	uint32_t vtxOffsCnt;
 	uint32_t *vtxOffsets;
+
+#ifdef CAAF_ENABLE_DEBUG_TOOLS
+	uint32_t vtxSize;
+	uint32_t idxSize;
+	uint8_t *vtxData;
+	uint8_t *idxData;
+#endif
 
 	~mesh();
 };

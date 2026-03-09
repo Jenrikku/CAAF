@@ -12,6 +12,11 @@ mesh::~mesh()
 	SDL_ReleaseGPUBuffer(device, idxBuf);
 
 	delete[] vtxOffsets;
+
+#ifdef CAAF_ENABLE_DEBUG_TOOLS
+	delete[] vtxData;
+	delete[] idxData;
+#endif
 }
 
 model::~model()

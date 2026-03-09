@@ -2,6 +2,7 @@
 #include "engine/caaf.h"
 #include "engine/lzma.h"
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_stdinc.h>
@@ -132,7 +133,8 @@ model::model *loadModel(uint8_t *caaf, const char *root, uint8_t *(*depsFunc)(co
 
 		switch (secType) {
 			case caaf::unknown:
-				cerr << "Unknown section found at: " << secStart - caaf << endl;
+				cerr << "Unknown section \"" << string((char *)secStart, 4) << "\" found at: " << secStart - caaf
+					 << endl;
 				continue;
 
 			case caaf::STRT:
@@ -234,11 +236,31 @@ model::model *loadModel(uint8_t *caaf, const char *root, uint8_t *(*depsFunc)(co
 
 					memcpy(mmesh->vtxOffsets, caaf::getSubEntryPtr(vbdStart, 0), vbdCount * sizeof(uint32_t));
 
+#ifdef CAAF_ENABLE_DEBUG_TOOLS
+					mmesh->vtxSize = mesh.vtxSize;
+					mmesh->idxSize = mesh.idxSize;
+					mmesh->vtxData = new uint8_t[mesh.vtxSize];
+					mmesh->idxData = new uint8_t[mesh.idxSize];
+
+					memcpy(mmesh->vtxData, meshStart, mesh.vtxSize);
+					memcpy(mmesh->idxData, meshStart + mesh.vtxSize, mesh.idxSize);
+#endif
+
 					break;
 				}
 
 				case caaf::GFXP: {
 					caaf::gfxPip gfxpip = *(caaf::gfxPip *)entryPtr;
+					string vertName = caaf::getString(strSec, gfxpip.vertNameIdx, strLimit);
+					string fragName = caaf::getString(strSec, gfxpip.fragNameIdx, strLimit);
+
+					SDL_GPUShader *vert = nullptr, frag = nullptr;
+
+					if (loadShader(vertName, device, pass)) vert = loadedShaders[vertName];
+					if (loadShader(fragName, device, pass)) frag = loadedShaders[fragName];
+
+					SDL_GPUGraphicsPipelineCreateInfo info = {.vertex_shader = vert, .fragment_shader = frag}; // TODO
+
 					break;
 				}
 
@@ -262,7 +284,30 @@ model::model *loadModel(uint8_t *caaf, const char *root, uint8_t *(*depsFunc)(co
 }
 
 // internal method
-bool loadShader(uint8_t *csaf, SDL_GPUDevice *device) {}
+SDL_GPUShader *loadShader(uint8_t *csaf, SDL_GPUDevice *device)
+{
+	csaf::header header = *(csaf::header *)csaf;
+
+	// Possible errors: magic number does not match or version does not match
+	if (string(header.magic) != CSAF_HEADER_MAGIC || header.version != CSAF_VERSION) return nullptr;
+
+	SDL_GPUShaderFormat formats = header.shaderFormats;
+	SDL_GPUShaderFormat targetFormat = resolvePlatformShaderFormat(formats, device);
+
+	auto [code, size] = csaf::getShaderCode(csaf, formats, targetFormat);
+
+	SDL_GPUShaderCreateInfo info = {.code_size = size,
+									.code = code,
+									.entrypoint = targetFormat == SDL_GPU_SHADERFORMAT_MSL ? "main0" : "main",
+									.format = targetFormat,
+									.stage = header.stage,
+									.num_samplers = header.sampleCnt,
+									.num_storage_textures = header.storageTexCnt,
+									.num_uniform_buffers = header.storageBufCnt,
+									.num_uniform_buffers = header.uniformBufCnt};
+
+	return SDL_CreateGPUShader(device, info);
+}
 
 bool loadModel(string name, SDL_GPUDevice *device, SDL_GPUCopyPass *pass)
 {
@@ -288,7 +333,13 @@ bool loadShader(string name, SDL_GPUDevice *device, SDL_GPUCopyPass *pass)
 
 	if (csaf == nullptr) return false;
 
-	// TO-DO
+	SDL_GPUShader *res = loadShader(csaf, device);
+	delete[] csaf;
+
+	if (res == nullptr) return false;
+
+	loadedShaders[name] = res;
+	return true;
 }
 
 void clearModels()
@@ -297,6 +348,14 @@ void clearModels()
 		delete value;
 
 	loadedModels.clear();
+}
+
+void clearShaders()
+{
+	// for (const auto [key, value] : loadedModels)
+	// 	delete SDL_ReleaseGPUShader(device, value);
+
+	loadedShaders.clear();
 }
 
 SDL_GPUShaderFormat resolvePlatformShaderFormat(SDL_GPUShaderFormat formats, SDL_GPUDevice *device)
