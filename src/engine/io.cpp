@@ -254,7 +254,7 @@ model::model *loadModel(uint8_t *caaf, const char *root, uint8_t *(*depsFunc)(co
 					string vertName = caaf::getString(strSec, gfxpip.vertNameIdx, strLimit);
 					string fragName = caaf::getString(strSec, gfxpip.fragNameIdx, strLimit);
 
-					SDL_GPUShader *vert = nullptr, frag = nullptr;
+					SDL_GPUShader *vert = nullptr, *frag = nullptr;
 
 					if (loadShader(vertName, device, pass)) vert = loadedShaders[vertName];
 					if (loadShader(fragName, device, pass)) frag = loadedShaders[fragName];
@@ -300,13 +300,13 @@ SDL_GPUShader *loadShader(uint8_t *csaf, SDL_GPUDevice *device)
 									.code = code,
 									.entrypoint = targetFormat == SDL_GPU_SHADERFORMAT_MSL ? "main0" : "main",
 									.format = targetFormat,
-									.stage = header.stage,
+									.stage = (SDL_GPUShaderStage)header.stage,
 									.num_samplers = header.sampleCnt,
 									.num_storage_textures = header.storageTexCnt,
-									.num_uniform_buffers = header.storageBufCnt,
+									.num_storage_buffers = header.storageBufCnt,
 									.num_uniform_buffers = header.uniformBufCnt};
 
-	return SDL_CreateGPUShader(device, info);
+	return SDL_CreateGPUShader(device, &info);
 }
 
 bool loadModel(string name, SDL_GPUDevice *device, SDL_GPUCopyPass *pass)

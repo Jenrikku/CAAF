@@ -78,7 +78,7 @@ pair<uint8_t *, uint32_t> getShaderCode(uint8_t *csaf, uint16_t formats, uint16_
 		targetFormat >>= 1;
 	}
 
-	uint8_t *entryPtr = csaf + 0x10 + (uint16_t)shaderPos << 3;
+	uint8_t *entryPtr = csaf + 0x10 + ((uint16_t)shaderPos << 3);
 	shaderEntry entry = *(shaderEntry *)entryPtr;
 
 	return make_pair(csaf + entry.offset, entry.size);
