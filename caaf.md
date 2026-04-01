@@ -109,29 +109,36 @@ Entry contents are as follows:
 | 05     | 01   | No   | FillMod | Describes how polygons are filled.                       |
 | 06     | 01   | No   | CullMod | The facing direction in which triangles will be culled.  |
 | 07     | 01   | No   | FrtFace | Specifies the vertex winding to determine front face.    |
-| 08     | 01   | No   | MSAACnt | The number of samples to be used in rasterization.       |
+| 08     | 01   | No   | MSCount | The number of samples to be used in rasterization.       |
 | 09     | 01   | No   | CompOp  | The comparison operator used for depth testing.          |
-| 0A     | 01   | No   | BackOp  | The stencil op state for back-facing triangles.          |
-| 0B     | 01   | No   | FrontOp | The stencil op state for front-facing triangles.         |
-| 0C     | 01   | No   | CmpMask | The compare mask used in stencil test.                   |
-| 0D     | 01   | No   | WrtMask | The write mask used in stencil test.                     |
-| 0E     | 02   | No   | EnFlags | Various flags to enable or disable parameters.           |
-| 10     | 04   | Yes* | DBConst | Factor of the depth value added to each fragment.        |
-| 14     | 04   | Yes* | DBClamp | The maximum depth bias of each fragment.                 |
-| 18     | 04   | Yes* | DBSlope | Factor applied to the fragment's slope in depth calc.    |
-| 1C     | 04   | No   | Props   | A properties ID for extensions. 0 if none used.          |
-| 20     | 04   | No   | VBDPtr  | Pointer to vertex buffer description subsection.         |
-| 24     | 04   | No   | VAPtr   | Pointer to vertex attribute subsection.                  |
-| 28     | 04   | No   | CTBPtr  | Pointer to color target blending subsection.             |
-| 2C     | 04   | No   | TSBPtr  | Pointer to texture sampler binding subsection.           |
+| 0A     | 01   | No   | BckFOp  | The action taken if stencil test fails for back faces.   |
+| 0B     | 01   | No   | BckPOp  | The action taken if stencil test passes for back faces.  |
+| 0C     | 01   | No   | BckDFOp | The action taken if depth test fails for back faces.     |
+| 0D     | 01   | No   | BckComp | The stencil comparison operator for back faces.          |
+| 0E     | 01   | No   | FntFOp  | The action taken if stencil test fails for front faces.  |
+| 0F     | 01   | No   | FntPOp  | The action taken if stencil test passes for front faces. |
+| 10     | 01   | No   | FntDFOp | The action taken if depth test fails for front faces.    |
+| 11     | 01   | No   | FntComp | The stencil comparison operator for front faces.         |
+| 12     | 01   | No   | CmpMask | The compare mask used in stencil test.                   |
+| 13     | 01   | No   | WrtMask | The write mask used in stencil test.                     |
+| 14     | 02   | No   | MSMask  | Reserved for future use.                                 |
+| 16     | 02   | No   | EnFlags | Various flags to enable or disable parameters.           |
+| 18     | 04   | Yes* | DBConst | Factor of the depth value added to each fragment.        |
+| 1C     | 04   | Yes* | DBClamp | The maximum depth bias of each fragment.                 |
+| 20     | 04   | Yes* | DBSlope | Factor applied to the fragment's slope in depth calc.    |
+| 24     | 04   | No   | Props   | A properties ID for extensions. 0 if none used.          |
+| 28     | 04   | No   | VBDPtr  | Pointer to vertex buffer description subsection.         |
+| 2C     | 04   | No   | VAPtr   | Pointer to vertex attribute subsection.                  |
+| 30     | 04   | No   | CTBPtr  | Pointer to color target blending subsection.             |
+| 34     | 04   | No   | TSBPtr  | Pointer to texture sampler binding subsection.           |
 
 The values of PType represent the values in `SDL_GPUPrimitiveType`.  
 The values of FillMod represent the values in `SDL_GPUFillMode`.  
 The values of CullMod represent the values in `SDL_GPUCullMode`.  
 The values of FrtFace represent the values in `SDL_GPUFrontFace`.  
 The values of MSAACnt represent the values in `SDL_GPUSampleCount`.  
-The values of CompOp represent the values in `SDL_GPUCompareOp`.  
-The values of BackOp and FrontOp represent the values in `SDL_GPUStencilOpState`.  
+The values of CompOp, BckComp and FntComp represent the values in `SDL_GPUCompareOp`.  
+The values of BckFOp, BckPOp, BckDFOp, FntFOp, FntPOp and FntDFOp represent the values in `SDL_GPUStencilOp`.  
 \* DBConst, DBClamp and DBSlope are floats.  
   
 The following flags are available in EnFlags:
@@ -142,7 +149,7 @@ The following flags are available in EnFlags:
 | 1   | EnDClip | Enables depth clip, otherwise use depth clamp.           |
 | 2   | EnDTest | Enables depth test.                                      |
 | 3   | EnDWrt  | Enables depth write.                                     |
-| 4   | EnDStcl | Enables depth stencil. Also affects target info.         |
+| 4   | EnSTest | Enables stencil test.                                    |
 | 5   | EnA2Cov | Enables alpha to coverage.                               |
 | 6   | EnMask  | Reserved for future use.                                 |
 
