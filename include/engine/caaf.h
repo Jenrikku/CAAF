@@ -22,7 +22,7 @@
 #define CAAF_GFXP_ENDCLIP 0b00000010
 #define CAAF_GFXP_ENDTEST 0b00000100
 #define CAAF_GFXP_ENDWRT 0b00001000
-#define CAAF_GFXP_ENDSTCL 0b00010000
+#define CAAF_GFXP_ENSTEST 0b00010000
 #define CAAF_GFXP_ENA2COV 0b00100000
 #define CAAF_GFXP_ENMASK 0b00100000
 
@@ -86,12 +86,19 @@ typedef struct gfxPip {
 	uint8_t fillMod;
 	uint8_t cullMod;
 	uint8_t frontFace;
-	uint8_t msaaCnt;
+	uint8_t msCnt;
 	uint8_t compOp;
-	uint8_t backOp;
-	uint8_t frontOp;
 	uint8_t cmpMask;
 	uint8_t wrtMask;
+	uint8_t bckFailOp;
+	uint8_t bckPassOp;
+	uint8_t bckDFailOp;
+	uint8_t bckCompOp;
+	uint8_t fntFailOp;
+	uint8_t fntPassOp;
+	uint8_t fntDFailOp;
+	uint8_t fntCompOp;
+	uint16_t msMask;
 	uint16_t enFlags;
 	float depthBiasConst;
 	float depthBiasClamp;

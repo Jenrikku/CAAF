@@ -175,8 +175,6 @@ model::model *loadModel(uint8_t *caaf, const char *root, uint8_t *(*depsFunc)(co
 					uint8_t *vbdStart = entryPtr + mesh.vbdPtr;
 					uint16_t vbdCount = caaf::getSubEntryCnt(vbdStart);
 
-					if (!vbdCount) break;
-
 					SDL_GPUTransferBufferCreateInfo transInfo = {.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 																 .size = meshSize};
 					SDL_GPUTransferBuffer *transBuf = SDL_CreateGPUTransferBuffer(device, &transInfo);
@@ -232,9 +230,12 @@ model::model *loadModel(uint8_t *caaf, const char *root, uint8_t *(*depsFunc)(co
 					mmesh->vtxBuf = vtxBuf;
 					mmesh->idxBuf = idxBuf;
 					mmesh->vtxOffsCnt = vbdCount;
-					mmesh->vtxOffsets = new uint32_t[vbdCount];
+					mmesh->vtxOffsets = nullptr;
 
-					memcpy(mmesh->vtxOffsets, caaf::getSubEntryPtr(vbdStart, 0), vbdCount * sizeof(uint32_t));
+					if (vbdCount) {
+						mmesh->vtxOffsets = new uint32_t[vbdCount];
+						memcpy(mmesh->vtxOffsets, caaf::getSubEntryPtr(vbdStart, 0), vbdCount * sizeof(uint32_t));
+					}
 
 #ifdef CAAF_ENABLE_DEBUG_TOOLS
 					mmesh->vtxSize = mesh.vtxSize;
@@ -254,12 +255,79 @@ model::model *loadModel(uint8_t *caaf, const char *root, uint8_t *(*depsFunc)(co
 					string vertName = caaf::getString(strSec, gfxpip.vertNameIdx, strLimit);
 					string fragName = caaf::getString(strSec, gfxpip.fragNameIdx, strLimit);
 
-					SDL_GPUShader *vert = nullptr, *frag = nullptr;
+					SDL_GPUGraphicsPipelineCreateInfo info = {};
 
-					if (loadShader(vertName, device, pass)) vert = loadedShaders[vertName];
-					if (loadShader(fragName, device, pass)) frag = loadedShaders[fragName];
+					if (!vertName.empty() && loadShader(vertName, device, pass))
+						info.vertex_shader = loadedShaders[vertName];
 
-					SDL_GPUGraphicsPipelineCreateInfo info = {.vertex_shader = vert, .fragment_shader = frag}; // TODO
+					if (!fragName.empty() && loadShader(fragName, device, pass))
+						info.fragment_shader = loadedShaders[fragName];
+
+					info.primitive_type = (SDL_GPUPrimitiveType)gfxpip.primType;
+
+					info.rasterizer_state = {.fill_mode = (SDL_GPUFillMode)gfxpip.fillMod,
+											 .cull_mode = (SDL_GPUCullMode)gfxpip.cullMod,
+											 .front_face = (SDL_GPUFrontFace)gfxpip.frontFace,
+											 .depth_bias_constant_factor = gfxpip.depthBiasConst,
+											 .depth_bias_clamp = gfxpip.depthBiasClamp,
+											 .depth_bias_slope_factor = gfxpip.depthBiasSlope,
+											 .enable_depth_bias = (bool)(gfxpip.enFlags & CAAF_GFXP_ENDBIAS),
+											 .enable_depth_clip = (bool)(gfxpip.enFlags & CAAF_GFXP_ENDCLIP)};
+
+					info.multisample_state = {.sample_count = (SDL_GPUSampleCount)gfxpip.msCnt,
+											  // FIXME: Uncomment once SDL supports it
+											  //.sample_mask = gfxpip.msMask,
+											  //.enable_mask = (bool)(gfxpip.enFlags & CAAF_CTB_ENMASK),
+											  .enable_alpha_to_coverage = (bool)(gfxpip.enFlags & CAAF_GFXP_ENA2COV)};
+
+					info.depth_stencil_state = {
+						.compare_op = (SDL_GPUCompareOp)gfxpip.compOp,
+						.back_stencil_state = {.fail_op = (SDL_GPUStencilOp)gfxpip.bckFailOp,
+											   .pass_op = (SDL_GPUStencilOp)gfxpip.bckPassOp,
+											   .depth_fail_op = (SDL_GPUStencilOp)gfxpip.bckDFailOp,
+											   .compare_op = (SDL_GPUCompareOp)gfxpip.bckCompOp},
+						.front_stencil_state = {.fail_op = (SDL_GPUStencilOp)gfxpip.fntFailOp,
+												.pass_op = (SDL_GPUStencilOp)gfxpip.fntPassOp,
+												.depth_fail_op = (SDL_GPUStencilOp)gfxpip.fntDFailOp,
+												.compare_op = (SDL_GPUCompareOp)gfxpip.fntCompOp},
+						.compare_mask = gfxpip.cmpMask,
+						.write_mask = gfxpip.wrtMask,
+						.enable_depth_test = (bool)(gfxpip.enFlags & CAAF_GFXP_ENDTEST),
+						.enable_depth_write = (bool)(gfxpip.enFlags & CAAF_GFXP_ENDWRT),
+						.enable_stencil_test = (bool)(gfxpip.enFlags & CAAF_GFXP_ENSTEST)};
+
+					info.props = gfxpip.props;
+
+					// Subsections
+					uint8_t *vbdPtr = entryPtr + gfxpip.vbdPtr, *vaPtr = entryPtr + gfxpip.vaPtr,
+							*ctbPtr = entryPtr + gfxpip.ctbPtr, *tsbPtr = entryPtr + gfxpip.tsbPtr;
+
+					uint16_t vbdCount = caaf::getSubEntryCnt(vbdPtr), vaCount = caaf::getSubEntryCnt(vaPtr);
+
+					SDL_GPUVertexBufferDescription vtxBufDescs[vbdCount];
+					SDL_GPUVertexAttribute vtxAttrs[vaCount];
+
+					info.vertex_input_state = {.vertex_buffer_descriptions = vtxBufDescs,
+											   .num_vertex_buffers = vbdCount,
+											   .vertex_attributes = vtxAttrs,
+											   .num_vertex_attributes = vaCount};
+
+					for (uint16_t i = 0; i < vbdCount; i++) {
+						caaf::vtxBufDesc vbd = *(caaf::vtxBufDesc *)caaf::getSubEntryPtr(vbdPtr, i);
+						vtxBufDescs[i] = {
+							.slot = i, .pitch = vbd.pitch, .input_rate = (SDL_GPUVertexInputRate)vbd.instStp};
+						// FIXME: Add support for instance_step_rate once SDL supports it.
+					}
+
+					for (uint16_t i = 0; i < vaCount; i++) {
+						caaf::vtxAttr va = *(caaf::vtxAttr *)caaf::getSubEntryPtr(vaPtr, i);
+						vtxAttrs[i] = {.location = va.loc,
+									   .buffer_slot = va.slot,
+									   .format = (SDL_GPUVertexElementFormat)va.format,
+									   .offset = va.offset};
+					}
+
+					// TODO: Read Blending and Texture Sampler Binding subsections
 
 					break;
 				}

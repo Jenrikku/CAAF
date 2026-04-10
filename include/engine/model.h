@@ -1,6 +1,7 @@
 #include "caaf.h"
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_gpu.h>
+#include <cstdint>
 #include <string>
 
 using namespace std;
@@ -43,6 +44,9 @@ class model
 	uint32_t meshCnt;
 	mesh *meshes;
 	SDL_GPUGraphicsPipeline **pipelines;
+
+	uint32_t blendStateCnt;
+	SDL_GPUColorTargetBlendState *blendStates;
 
 	~model();
 };
