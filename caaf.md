@@ -157,7 +157,7 @@ Flags are considered enabled when the bit is set to 1.
 
 ### Vertex Buffer Description subsection
 
-Size of data: 0C  
+Size of data: 08  
 Each vertex buffer description entry is defined as follows:
 
 | Offset | Size | Sign | Name    | Description                                              |
@@ -170,7 +170,7 @@ InstStp is meant to be used in the future when the GPU API supports instance ste
 
 ### Vertex Attribute subsection
 
-Size of data: 10  
+Size of data: 0C  
 Each vertex attribute entry is defined as follows:
 
 | Offset | Size | Sign | Name    | Description                                              |
